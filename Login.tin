@@ -1,0 +1,19 @@
+#nop -------------------------------------------------------------------------
+#nop Login
+#nop -------------------------------------------------------------------------
+#echo {Logging in.}
+
+#session HL mud.harshlands.net 5555
+
+#nop skip past questions
+no
+L
+
+#nop add your account name below this line
+YOURACCOUNTNAME
+#nop optionally add your password below this line for autologin
+YOURPASSWORD
+
+#nop select character and enter the world
+1
+1

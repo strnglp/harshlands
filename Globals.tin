@@ -1,0 +1,83 @@
+#echo {Loading globals.}
+#alias {rlglobals} { #read {$dir/Globals.tin} }
+
+#variable {FG_BLACK}    {<808>}
+#variable {FG_RED}      {<818>}
+#variable {FG_GREEN}    {<828>}
+#variable {FG_YELLOW}   {<838>}
+#variable {FG_BLUE}     {<848>}
+#variable {FG_MAGENTA}  {<858>}
+#variable {FG_CYAN}     {<868>}
+#variable {FG_WHITE}    {<878>}
+#variable {FG_BBLACK}   {<108>}
+#variable {FG_BRED}     {<118>}
+#variable {FG_BGREEN}   {<128>}
+#variable {FG_BYELLOW}  {<138>}
+#variable {FG_BBLUE}    {<148>}
+#variable {FG_BMAGENTA} {<158>}
+#variable {FG_BCYAN}    {<168>}
+#variable {FG_BWHITE}   {<178>}
+
+#variable {BG_BLACK}    {<080>}
+#variable {BG_RED}      {<081>}
+#variable {BG_GREEN}    {<082>}
+#variable {BG_YELLOW}   {<083>}
+#variable {BG_BLUE}     {<084>}
+#variable {BG_MAGENTA}  {<085>}
+#variable {BG_CYAN}     {<086>}
+#variable {BG_WHITE}    {<087>}
+
+#variable {BOLD}        {<188>}
+#variable {DIM}         {<288>}
+#variable {ITALIC}      {<388>}
+#variable {UNDER}  {<488>}
+#variable {BLINK}       {<588>}
+#variable {REVERSE}     {<788>}
+#variable {DEFAULT}     {<099>}
+#variable {RESET}       {<088>}
+
+#variable {GAME_ROOM}   {\e[36m} 
+
+#variable {CRITICAL}               {$FG_RED}
+#variable {HIGH}                   {$FG_MAGENTA}
+#variable {MEDIUM}                 {$FG_YELLOW}
+#variable {LOW}                    {$FG_GREEN}
+#variable {INFO}                   {$FG_WHITE}
+#variable {CMD}                    {$FG_WHITE}
+#variable {YOU}                    {$FG_BLUE}
+#variable {ENEMY}                  {$FG_YELLOW}
+#variable {FRIEND}                 {$FG_CYAN}
+#variable {KNOWN}                  {$FG_BLUE}
+#variable {PREVIOUSLY_KNOWN}       {$FG_BBLACK}
+
+#nop Combine 2 color codes for #highlight
+#function cc {
+    #variable {result} {};
+    #regexp {%1} {<%.%.%.>} {
+        #variable {x1} {&1};
+        #variable {y1} {&2};
+        #variable {z1} {&3};
+    };
+    #regexp {%2} {<%.%.%.>} {
+        #variable {x2} {&1};
+        #variable {y2} {&2};
+        #variable {z2} {&3};
+    };
+    #if {$x2 === 8} {
+        #variable {x_res} {$x1};
+    } {
+        #variable {x_res} {$x2};
+    };
+    #if {$y2 === 8} {
+        #variable {y_res} {$y1};
+    } {
+        #variable {y_res} {$y2};
+    };
+    #if {$z2 === 8} {
+        #variable {z_res} {$z1};
+    } {
+        #variable {z_res} {$z2};
+    };
+    #format {result} {<%s%s%s>} {${x_res}${y_res}${z_res}};
+    #return {$result};
+}

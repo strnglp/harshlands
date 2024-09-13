@@ -1,0 +1,7 @@
+#echo {Loading highlights.}
+#alias {rlhl} { #read {$dir/HL.tin} }
+
+#variable {CLOSED} { @cc{ {$UNDER} {$FG_WHITE} } }
+#highlight {%w \(closed%*\)} {$CLOSED} {100}
+#variable {OPEN} {$UNDER}
+#highlight {%w \(open%*\)} {$OPEN} {100}

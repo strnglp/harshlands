@@ -1,0 +1,520 @@
+#echo {Loaded prompt.};
+#alias {rlprompt} { #read {$dir/Prompts.tin} }
+
+#action {Goodbye, friend.. Come back soon!} {
+    polloff;
+}
+
+#gag {^<%+1..w/%+/ >%*$};
+#gag {^speaking %+, composing %+$};
+#gag {^mode %+, aiming %+, endurance\[%+\]%s$};
+#gag {^weapon aspects %+ and %+$};
+#gag {^currently %+, fatigue %+$};
+#gag {alcohol %+ hunger %+ thirst %+$};
+#gag {^state {sitting|standing|resting|sleeping}$};
+#gag {^you {trudge|pace|walk|jog|run|sprint}$};
+#gag {^time %+$};
+#gag {^you are currently cloaked or hooded%s$};
+
+#variable {language} {};
+#variable {composing} {};
+#variable {combat_mode} {};
+#variable {aiming} {};
+#variable {endurance} {};
+#variable {aspect1} {};
+#variable {aspect2} {};
+#variable {encumbrance} {};
+#variable {fatigue} {};
+#variable {cur_load} {};
+#variable {max_load} {};
+#variable {sobriety} {};
+#variable {hunger} {};
+#variable {thirst} {};
+#variable {position} {};
+#variable {condition} {};
+#variable {disguise} {};
+#variable {time_of_day} {};
+#variable {health} {};
+#variable {stamina} {};
+#variable {speed} {};
+#variable {travel_string} {};
+
+#variable {lineone} {};
+#variable {linetwo} {};
+#variable {linethree} {};
+#variable {hud_update} {0};
+#variable {wait_for_input} {0};
+
+#unevent {CATCH RECEIVED LINE};
+#event {CATCH RECEIVED LINE} {
+
+    #nop special case for help text that is multi line, we don't want to;
+    #nop send profile/health/time when the help is waiting for input;
+    #if {"%1" == "%*Press return to continue - 'q' to quit%*"} {
+        #variable {wait_for_input} {1};
+    } {
+        #variable {wait_for_input} {0};
+    };
+
+    #regexp {%1} {^<%+1..w/%+/ >%*$} {
+        #format {health} {%n} {&1};
+        #format {stamina} {%-8s} {&2};
+        #replace {stamina} {|} {■};
+        #return;
+    };
+
+    #regexp {%1} {^speaking %+, composing %+$} {
+        #format {language} {%n} {&1};
+        #format {composing} {%n} {&2};
+        #return;
+    };
+
+    #regexp {%1} {^mode %+, aiming %+, endurance\[%+\]%s$} {
+        #format {combat_mode} {%n} {&1};
+        #format {aiming} {%n} {&2};
+        #format {endurance} {%n} {&3};
+        #return;
+    };
+
+    #regexp {%1} {^weapon aspects %+ and %+$} {
+        #format {aspect1} {%n} {&1};
+        #format {aspect2} {%n} {&2};
+    };
+
+    #regexp {%1} {^currently %+, fatigue %+$} {
+        #format {encumbrance} {%n} {&1};
+        #format {fatigue} {%n} {&2};
+        #return;
+    };
+
+    #regexp {%1} {alcohol %+ hunger %+ thirst %+$} {
+        #format {sobriety} {%n} {&1};
+        #format {hunger} {%n} {&2};
+        #format {thirst} {%n} {&3};
+        #return;
+    };
+
+    #regexp {%1} {^state {sitting|standing|resting|sleeping}$} {
+        #format {position} {%n} {&1};
+        #return;
+    };
+
+    #regexp {%1} {^you {trudge|pace|walk|jog|run|sprint}$} {
+        #format {speed} {%n} {&1};
+        #return;
+    };
+
+    #regexp {%1} {^time %+$} {
+        #format {time_of_day} {%n} {&1};
+        #return;
+    };
+
+    #regexp {%1} {^you are currently cloaked or hooded%s$} {
+        #variable {disguise} {Cloaked or hooded};
+        #return;
+    };
+
+    #showme %0;
+};
+
+#nop TODO: Experiment with disabling the CATCH LINE event when not polling;
+#function start_poll {
+    #ticker {poll} {
+        #if {$wait_for_input} {#return};
+        #variable {hud_update} {1};
+        #variable {disguise} {};
+        #send {profile t};
+    } {4};
+};
+
+#function stop_poll {
+    #unticker {poll};
+    #variable {hud_update} {0};
+    #variable {wait_for_input} {0};
+    #echo {Status polling ended.};
+};
+
+#alias {pollon} {
+    #variable {hud_update} {0};
+    #variable {wait_for_input} {0};
+    #variable {tmp} {@start_poll{};};
+    #echo {Polling for status.};
+};
+#alias {polloff} { #variable {tmp} {@stop_poll{};} };
+
+#action {Type @help for editor options.} {
+    polloff;
+    #echo {Disabling status polling while editing. Use `pollon` to resume.};
+};
+
+#ticker hud {
+    #format {topbar} { %s %s %s %s %s %s %-80s} {@get_time{}} {@get_hunger{}} {@get_thirst{}} {@get_sobriety{}} {@get_language{}} {@get_composing{}} {};
+    #showme {$topbar} {2} {3};
+    #format {bottombar1} { %s%s %s %s %s %s %-80s} {@get_disguise{}} {@get_speed{}} {@get_position{}} {@get_combat_mode{}} {@get_aiming{}} {@get_aspect{}} {};
+    #showme {$bottombar1} {-4} {3};
+    #format {bottombar2} { %s %s %s %s %-80s} {@get_health{}} {@get_stamina{}} {@get_fatigue{}} {@get_encumbrance{}} {};
+    #showme {$bottombar2} {-3} {3};
+} {1};
+
+
+#nop topbar;
+#function get_time {
+    #variable {result} {};
+    #switch {{$time_of_day}} {
+        #case {{Dawn}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Early morning}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Morning}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Late morning}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{High sun}} {
+            #format {result} {${FG_YELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Early afternoon}} {
+            #format {result} {${FG_YELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Afternoon}} {
+            #format {result} {${FG_YELLOW} %s${RESET}} {$time_of_day};
+        };
+        #case {{Late afternoon}} {
+            #format {result} {${FG_BRED} %s${RESET}} {$time_of_day};
+        };
+        #case {{Dusk}} {
+            #format {result} {${FG_RED} %s${RESET}} {$time_of_day};
+        };
+        #case {{Twilight}} {
+            #format {result} {${FG_BMAGENTA} %s${RESET}} {$time_of_day};
+        };
+        #case {{Evening}} {
+            #format {result} {${FG_MAGENTA} %s${RESET}} {$time_of_day};
+        };
+        #case {{Night time}} {
+            #format {result} {${FG_BBLUE} %s${RESET}} {$time_of_day};
+        };
+        #case {{Before midnight}} {
+            #format {result} {${FG_BBLUE} %s${RESET}} {$time_of_day};
+        };
+        #case {{Midnight}} {
+            #format {result} {${FG_BLUE} %s${RESET}} {$time_of_day};
+        };
+        #case {{After midnight}} {
+            #format {result} {${FG_BLUE} %s${RESET}} {$time_of_day};
+        };
+        #case {{Late at night}} {
+            #format {result} {${FG_BLUE} %s${RESET}} {$time_of_day};
+        };
+        #case {{Before dawn}} {
+            #format {result} {${FG_BBLUE} %s${RESET}} {$time_of_day};
+        };
+        #default  { #format {result} {? %s} {$time_of_day};};
+    };
+    #return {$result};
+};
+
+#function get_hunger {
+    #variable {result} {$hunger};
+    #replace {result} {Feeling } {};
+    #switch {{$result}} {
+        #case {{Absolutely stuffed}} {
+            #format {result} {${FG_GREEN}󱐟 %n${RESET}} {$result};
+        };
+        #case {{Quite full}} {
+            #format {result} {${FG_BGREEN}󱐟 %n${RESET}} {$result};
+        };
+        #case {{peckish}} {
+            #format {result} {${FG_BYELLOW}󱐟 %n${RESET}} {$result};
+        };
+        #case {{slightly hungry}} {
+            #format {result} {${FG_YELLOW}󱐟 %n${RESET}} {$result};
+        };
+        #case {{Hungry}} {
+            #format {result} {${FG_BRED}󱐟 %n${RESET}} {$result};
+        };
+        #case {{Starving}} {
+            #format {result} {${FG_RED}󱐟 %n${RESET}} {$result};
+        };
+        #default  { #format {result} {? %n} {$result};};
+    };
+    #return {$result};
+};
+
+#function get_thirst {
+    #variable {result} {$thirst};
+    #replace {result} {Feeling } {};
+    #switch {{$result}} {
+        #case {{Completely sated}} {
+            #format {result} {${FG_GREEN}󰆫 %n${RESET}} {$result};
+        };
+        #case {{Nicely quenched}} {
+            #format {result} {${FG_BGREEN}󰆫 %n${RESET}} {$result};
+        };
+        #case {{slightly thirsty}} {
+            #format {result} {${FG_BYELLOW}󰆫 %n${RESET}} {$result};
+        };
+        #case {{thirsty}} {
+            #format {result} {${FG_YELLOW}󰆫 %n${RESET}} {$result};
+        };
+        #case {{Parched}} {
+            #format {result} {${FG_BRED}󰆫 %n${RESET}} {$result};
+        };
+        #case {{Quite parched}} {
+            #format {result} {${FG_BRED}󰆫 %n${RESET}} {$result};
+        };
+        #case {{Dying of thirst}} {
+            #format {result} {${FG_RED}󰆫 %n${RESET}} {$result};
+        };
+        #default  { #format {result} {? %n} {$result};};
+    };
+    #return {$result};
+};
+
+#function get_sobriety {
+    #variable {result} {$sobriety};
+    #switch {{$result}} {
+        #case {{Sober}} {
+            #format {result} {${FG_GREEN} %n${RESET}} {$result};
+        };
+        #default  { #format {result} {? %n} {$result};};
+    };
+    #return {$result};
+};
+
+#function get_language {
+    #variable {result} {$language};
+    #if {"$result" == "Harnic"} {
+        #format {result} {${FG_CYAN}󰭹 %s${RESET}} {$result};
+    } {
+        #format {result} {${FG_BCYAN}󰭹 %s${RESET}} {$result};
+    };
+    #return {$result};
+};
+
+#function get_composing {
+    #variable {result} {$composing};
+    #if {"$result" == "Nothing"} {
+        #format {result} {${FG_CYAN}󰛓 %s${RESET}} {Drawing};
+    } {
+        #format {result} {${FG_BCYAN}󰛓 %s${RESET}} {$result};
+    };
+    #return {$result};
+};
+
+
+#nop bottombar1;
+#function get_disguise {
+    #variable {result} {};
+    #if {"$disguise" != "%s"} { 
+        #format {result} {${FG_MAGENTA}󱀣 %s ${$RESET}} {$disguise}; 
+    };
+    #return {$result};
+};
+
+#function get_health {
+    #variable {result} {};
+    #switch {{$health}} {
+        #case {{Unhurt}} {
+            #format {result} {${FG_GREEN} %s${RESET}} {$health};
+        };
+        #case {{Superficial}} {
+            #format {result} {${FG_BGREEN} %s${RESET}} {$health};
+        };
+        #case {{Minor}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$health};
+        };
+        #case {{Moderate}} {
+            #format {result} {${FG_YELLOW} %s${RESET}} {$health};
+        };
+        #case {{Severe}} {
+            #format {result} {${FG_RED} %s${RESET}} {$health};
+        };
+        #case {{Mortal}} {
+            #format {result} {${FG_BRED} %s${RESET}} {$health};
+        };
+        #default  { #format {result} { %s} {$health};};
+    };
+    #return {$result};
+};
+
+#function get_stamina {
+    #variable {result} {};
+    #switch {{$fatigue}} {
+        #case {{Completely Rested}} {
+            #format {result} {${FG_GREEN} %s${RESET}} {$stamina};
+        };
+        #case {{Relatively Fresh}} {
+            #format {result} {${FG_BGREEN} %s${RESET}} {$stamina};
+        };
+        #case {{Somewhat Winded}} {
+            #format {result} {${FG_BYELLOW} %s${RESET}} {$stamina};
+        };
+        #case {{Winded}} {
+            #format {result} {${FG_YELLOW} %s${RESET}} {$stamina};
+        };
+        #case {{Somewhat Tired}} {
+            #format {result} {${FG_BLUE} %s${RESET}} {$stamina};
+        };
+        #case {{Tired}} {
+            #format {result} {${FG_BMAGENTA} %s${RESET}} {$stamina};
+        };
+        #case {{Extremely Tired}} {
+            #format {result} {${FG_MAGENTA} %s${RESET}} {$stamina};
+        };
+        #case {{Exhausted}} {
+            #format {result} {${FG_RED} %s${RESET}} {$stamina};
+        };
+        #case {{Completely Exhausted}} {
+            #format {result} {${FG_BRED} %s${RESET}} {$stamina};
+        };
+        #default  { #format {result} {? %s} {$stamina};};
+    };
+    #return {$result};
+};
+
+#function get_fatigue {
+    #variable {result} {};
+    #switch {{$fatigue}} {
+        #case {{Completely Rested}} {
+            #format {result} {${FG_GREEN}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Relatively Fresh}} {
+            #format {result} {${FG_BGREEN}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Somewhat Winded}} {
+            #format {result} {${FG_BYELLOW}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Winded}} {
+            #format {result} {${FG_YELLOW}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Somewhat Tired}} {
+            #format {result} {${FG_BLUE}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Tired}} {
+            #format {result} {${FG_BMAGENTA}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Extremely Tired}} {
+            #format {result} {${FG_MAGENTA}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Exhausted}} {
+            #format {result} {${FG_RED}󰋣 %s${RESET}} {$fatigue};
+        };
+        #case {{Completely Exhausted}} {
+            #format {result} {${FG_BRED}󰋣 %s${RESET}} {$fatigue};
+        };
+        #default  { #format {result} {? %s} {$fatigue};};
+    };
+    #return {$result};
+};
+
+#function get_combat_mode {
+    #variable {result} {};
+    #switch {{$combat_mode}} {
+        #case {{Frantic}} {
+            #format {result} {${FG_RED}󰞇 %s${RESET}} {$combat_mode};
+        };
+        #case {{Aggressive}} {
+            #format {result} {${FG_YELLOW}󰞇 %s${RESET}} {$combat_mode};
+        };
+        #case {{Normal}} {
+            #format {result} {${FG_CYAN}󰞇 %s${RESET}} {$combat_mode};
+        };
+        #case {{Careful}} {
+            #format {result} {${FG_BLUE}󰞇 %s${RESET}} {$combat_mode};
+        };
+        #case {{Defensive}} {
+            #format {result} {${FG_MAGENTA}󰞇 %s${RESET}} {$combat_mode};
+        };
+        #default  { #format {result} {󰞇 %s} {$combat_mode};};
+    };
+    #return {$result};
+};
+
+#function get_aiming {
+    #variable {result} {${FG_CYAN}󰣉 $aiming${RESET}};
+    #replace {result} {Normal} {Mid};
+    #return {$result};
+};
+
+#nop bottombar2;
+#function get_aspect {
+    #variable {result} {};
+    #if {"$aspect1" != "Not Set"} {
+        #variable {result} {$aspect1};
+    };
+    #if {"$aspect2" != "Not Set"} {
+        #format {result} {%s%s} {$result} {$aspect2};
+    };
+    #replace {result} {Edge} {󰓥};
+    #replace {result} {Pierce} {󰧼};
+    #replace {result} {Blunt} {󰣪};
+    #if {"$result" == ""} {
+        #variable {result} {${FG_CYAN} Unarmed${RESET}};
+    } {
+        #format {result} {${FG_YELLOW}%s Armed${RESET}} {$result};
+    };
+    #return {$result};
+};
+
+#function get_speed {
+    #variable {result} {};
+    #switch {{$speed}} {
+        #case {{Trudge}} {
+            #format {result} {${FG_BLUE}󰖃 %s${RESET}} {$speed};
+        };
+        #case {{Pace}} {
+            #format {result} {${FG_BBLUE} %s${RESET}} {$speed};
+        };
+        #case {{Walk}} {
+            #format {result} {${FG_CYAN} %s${RESET}} {$speed};
+        };
+        #case {{Jog}} {
+            #format {result} {${FG_BYELLOW}󰑮 %s${RESET}} {$speed};
+        };
+        #case {{Run}} {
+            #format {result} {${FG_YELLOW}󰑮 %s${RESET}} {$speed};
+        };
+        #case {{Sprint}} {
+            #format {result} {${FG_RED}󰑮 %s${RESET}} {$speed};
+        };
+        #default  { #format {result} {? %s} {$speed};};
+    };
+    #return {$result};
+};
+
+#function get_position {
+    #variable {result} {};
+    #switch {{$position}} {
+        #case {{Standing}} {
+            #format {result} {${FG_CYAN} %s${RESET}} {$position};
+        };
+        #case {{Sitting}} {
+            #format {result} {${FG_BYELLOW}󱉉 %s${RESET}} {$position};
+        };
+        #case {{Resting}} {
+            #format {result} {${FG_MAGENTA}󰋣 %s${RESET}} {$position};
+        };
+        #case {{Sleeping}} {
+            #format {result} {${FG_BLUE}󰒲 %s${RESET}} {$position};
+        };
+        #default  { #format {result} {? %s} {$position};};
+    };
+    #return {$result};
+};
+
+#function get_encumbrance {
+    #variable {result} {};
+    #switch {{$encumbrance}} {
+        #case {{Unencumbered}} {
+            #format {result} {${FG_GREEN}󰖡 %s${RESET}} {$encumbrance};
+        };
+        #default  { #format {result} {? %s} {$encumbrance};};
+    };
+    #return {$result};
+};
+
+pollon;

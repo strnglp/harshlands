@@ -1,0 +1,189 @@
+#echo {Loading map.}
+#alias {rlmap} { #read {$dir/Map.tin} }
+
+#highlight {\b{north|south|east|west}\b} {$FG_GREEN};
+
+#PATHDIR {d}   {u}   {32}
+#PATHDIR {e}   {w}   {2}
+#PATHDIR {n}   {s}   {1}
+#PATHDIR {s}   {n}   {4}
+#PATHDIR {u}   {d}   {16}
+#PATHDIR {w}   {e}   {8}
+#PATHDIR {ne}  {sw}  {3}
+#PATHDIR {nw}  {se}  {9}
+#PATHDIR {se}  {nw}  {6}
+#PATHDIR {sw}  {ne}  {12}
+
+#PATHDIR {enter home} {leave}
+#PATHDIR {enter 2.home} {leave}
+#PATHDIR {enter 3.home} {leave}
+#PATHDIR {enter 4.home} {leave}
+#PATHDIR {enter 5.home} {leave}
+#PATHDIR {enter 6.home} {leave}
+#PATHDIR {enter 7.home} {leave}
+#PATHDIR {enter 8.home} {leave}
+#PATHDIR {enter 9.home} {leave}
+#PATHDIR {enter town} {leave}
+#PATHDIR {enter 2.town} {leave}
+#PATHDIR {enter 3.town} {leave}
+#PATHDIR {enter 4.town} {leave}
+#PATHDIR {enter 5.town} {leave}
+#PATHDIR {enter 6.town} {leave}
+#PATHDIR {enter 7.town} {leave}
+#PATHDIR {enter 8.town} {leave}
+#PATHDIR {enter 9.town} {leave}
+#PATHDIR {enter tenement} {leave}
+#PATHDIR {enter 2.tenement} {leave}
+#PATHDIR {enter 3.tenement} {leave}
+#PATHDIR {enter 4.tenement} {leave}
+#PATHDIR {enter 5.tenement} {leave}
+#PATHDIR {enter 6.tenement} {leave}
+#PATHDIR {enter 7.tenement} {leave}
+#PATHDIR {enter 8.tenement} {leave}
+#PATHDIR {enter 9.tenement} {leave}
+#PATHDIR {enter cart} {leave}
+
+
+#alias {up} {u}
+#alias {down} {d}
+#alias {west} {w}
+#alias {east} {e}
+#alias {north} {n}
+#alias {south} {s}
+#alias {out} {leave}
+#alias {so} {s}
+#alias {no} {n}
+#alias {do} {d}
+#nop Also stop any potential map pathing when sending stop command
+#alias {stop} {#path stop; #send stop}
+
+#nop -------------------------------------------------------------------------
+#nop Map actions are imperfect, if you discover a scenario where the map 
+#nop shouldn't have moved, add the line here. It is helpful to understand
+#nop #map and its various commands, most especially #map undo/goto/move
+#nop -------------------------------------------------------------------------
+#action {^Alas, you cannot go that way...} {#map undo}
+#action {^The door seems to be closed.} {#map undo}
+
+#nop these aliases keep the map in line when emotes are used with move directions
+#alias {sneak {n|e|s|w|u|d}} {#send sneak %1; #map move %1}
+#alias {sneak {north|east|south|west|up|down}} {#send sneak %1; #map move %1}
+#alias {{n|e|s|w|u|d} (%*)} {#send %1 (%2); #map move %1}
+#alias {{north|east|south|west|up|down} (%*)} {#send %1 (%2); #map move %1}
+
+#nop Also stop any potential map pathing when sending stop command
+#alias {stop} {#path stop; #send stop}
+
+#alias {%iarrive mangai} {#send arrive mangai; #map goto 287; #map center}
+#alias {%iarrive market} {#send arrive market; #map goto 303; #map center}
+#alias {%iarrive heru} {#send arrive heru; #map goto 22; #map center}
+#alias {%iarrive ternua} {#send arrive ternua; #map goto 68; #map center}
+#alias {%iarrive querina} {#send arrive querina; #map goto 45; #map center}
+
+
+
+#nop -------------------------------------------------------------------------
+#nop MAPPING MOUSE EVENTS: Click and drag the map around and it will move the centre
+#nop double click and it will show you information on that room
+#nop Click middle mouse button and it will walk you there with #map run
+#nop -------------------------------------------------------------------------
+
+
+#nop MOUSE EVENTS
+#event {MAP REGION PRESSED MOUSE BUTTON ONE} {
+        #var {o_x} %0;
+        #var {o_y} %1;
+        #var {pressed_at} %0
+}
+
+#event {MAP REGION MOVED MOUSE BUTTON ONE} {
+        #var d_x %0;
+        #var d_y %1;
+        #math {c_x} {$o_x - $d_x};
+        #math {c_y} {$d_y - $o_y};
+        #map center $c_y $c_x 0
+}
+
+#event {MAP ROOM DOUBLE-CLICKED MOUSE BUTTON ONE} {#echo {${FG_BGREEN}Room: vnum %4}; #map at %4 #map set}
+
+#nop movement timing for reference
+#nop Note: My walk speed =~ 3.6 seconds
+#variable {walktimer} {0}
+#alias {walktimer on} { #variable {walktimer} {1}}
+#alias {walktimer off} { #variable {walktimer} {0}}
+#variable {prev_room_time} {0}
+#variable {cur_room_time} {0}
+
+#nop \e[0m>\e[36mTernua Road\e[0m \e[32m[\e[36mCity\e[32m]\e[0m  (Patrolled)\e[0m 
+#nop                  1       2      3     4    5    6    7    
+#action {~${GAME_ROOM}%+%c %c\[%c%+%c\]%*} {
+        #if {$walk_timer} {
+                #variable {prev_room_time} {$cur_room_time};
+                #echo {Prev: %s Cur: %s} {$prev_room_time} {$cur_room_time};
+                #script {now} {perl -MTime::HiRes=clock_gettime -e 'print clock_gettime(0)'};
+                #variable {cur_room_time} {$now[1]};
+                #script {elapsed_time} {perl -e 'print $cur_room_time - $prev_room_time'};
+                #echo {Walk time: %s} {$elapsed_time[1]};
+        };
+
+        #nop mapping highlights and info;
+        #map set roomname %1;
+        #regexp {%5} {{City|Road|Trail}} {
+                #map get {roomsymbol} {symbol};
+                #if {{$symbol} == "{| }"} {
+                    #map set roomcolor ${FG_BYELLOW}
+                }
+        };
+}
+
+#nop branching/hidden rooms;
+#nop e.g. walk east, walk back west, mapbranch w;
+#alias {mapbranch %.} {#map insert %1 {void;hide}}
+#nop aliases for highlighting rooms;
+#alias {mapreset} {#map set roomsymbol {}; #map set roomcolor ${FG_BWHITE}}
+#alias {maproad} {#map set roomcolor ${FG_BYELLOW}}
+#alias {mapshop} {#map set roomsymbol ; #map set roomcolor ${FG_BGREEN}}
+#alias {maptavern} {#map set roomsymbol ; #map set roomcolor ${FG_BCYAN}}
+#alias {mapstable} {#map set roomsymbol 󱗁; #map set roomcolor ${FG_BBLUE}}
+#alias {mapapt} {#map set roomsymbol ; #map set roomcolor ${FG_BMAGENTA}}
+#alias {mapwarehouse} {#map set roomsymbol 󰾁; #map set roomcolor ${FG_BMAGENTA}}
+#alias {mapgate} {#map set roomsymbol 󰊙; #map set roomcolor ${FG_YELLOW}}
+#alias {maptemple} {#map set roomsymbol ; #map set roomcolor ${FG_BRED}}
+#alias {mapport} {#map set roomsymbol 󰻈; #map set roomcolor ${FG_BLUE}}
+#alias {mapclinic} {#map set roomsymbol 󰿶; #map set roomcolor ${FG_RED}}
+#alias {mapguild} {#map set roomsymbol 󰡉; #map set roomcolor ${FG_BBLUE}}
+
+
+#nop load map
+#variable {map} {$dir/MyMap.map}
+#script {mapexists} {[ -e $map ] && echo 1}
+#if {"$mapexists[1]" === "1"} {
+        #echo {Map found, reading.};
+        #map read $map;
+        #map return;
+}
+{
+        #echo {Map not found, creating.};
+        #map create 200000;
+        #map goto 1;
+        #map write $map;
+}
+
+#map flag vtmap on
+#map offset 4 87 -6 -1
+#map flag direction off
+#map legend {ascii nesw misc} {user} {󱣣}
+
+
+
+#nop autosave map
+#alias {quit} {
+    #echo {MAP SAVED};
+    #map write $map;
+    #send {quit};
+}
+#action {Goodbye, friend.. Come back soon!} {
+    #echo {MAP SAVED};
+    #map write $map;
+}
+#ticker {map_timer} {#map write $map} {180}

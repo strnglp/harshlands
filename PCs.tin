@@ -1,0 +1,9 @@
+#nop -------------------------------------------------------------------------
+#nop Naming and highlighting
+#nop -------------------------------------------------------------------------
+#echo {Loading PC highlights.}
+#alias {rlpc} { #read {$dir/PCs.tin} }
+
+#nop EXAMPLE:
+#nop #substitute {shriveled, little short man} {%0 (Nickname)}
+#nop #highlight {\(Nickname\)} {$FRIEND} {5}
