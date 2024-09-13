@@ -132,7 +132,7 @@
     #variable {tmp} {@stop_poll{};} 
 };
 
-#action {Goodbye, friend.. Come back soon!} {
+#action {%*Goodbye, friend.. Come back soon!%*} {
     polloff;
     #showme {${MEDIUM}Status polling disabled while in menu. Use `pollon` to resume.${RESET}};
 }
