@@ -45,7 +45,7 @@ Change your terminal emulator's default font to the NerdFont you just installed.
 ### Login (required)
 The only essential configuration required is inside `Login.tin`. Add your username and password there, or just delete those lines if you prefer to type them at login every time.
 
-### Prompt
+### Prompt (required)
 1. Type `set barprompt` until you see `Bar Prompt enabled.`
 2. Type `set prompt` until you see `Informative prompt enabled.`
 
