@@ -1,7 +1,7 @@
 #nop -------------------------------------------------------------------------
 #nop Naming and highlighting
 #nop -------------------------------------------------------------------------
-#echo {Loading PC highlights.}
+#showme {${INFO}Loading PC highlights.${RESET}};
 #alias {rlpc} { #read {$dir/PCs.tin} }
 
 #nop EXAMPLE:
