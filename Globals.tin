@@ -1,4 +1,3 @@
-#echo {Loading globals.}
 #alias {rlglobals} { #read {$dir/Globals.tin} }
 
 #variable {FG_BLACK}    {<808>}
@@ -18,14 +17,14 @@
 #variable {FG_BCYAN}    {<168>}
 #variable {FG_BWHITE}   {<178>}
 
-#variable {BG_BLACK}    {<080>}
-#variable {BG_RED}      {<081>}
-#variable {BG_GREEN}    {<082>}
-#variable {BG_YELLOW}   {<083>}
-#variable {BG_BLUE}     {<084>}
-#variable {BG_MAGENTA}  {<085>}
-#variable {BG_CYAN}     {<086>}
-#variable {BG_WHITE}    {<087>}
+#variable {BG_BLACK}    {<880>}
+#variable {BG_RED}      {<881>}
+#variable {BG_GREEN}    {<882>}
+#variable {BG_YELLOW}   {<883>}
+#variable {BG_BLUE}     {<884>}
+#variable {BG_MAGENTA}  {<885>}
+#variable {BG_CYAN}     {<886>}
+#variable {BG_WHITE}    {<887>}
 
 #variable {BOLD}        {<188>}
 #variable {DIM}         {<288>}
@@ -38,11 +37,11 @@
 
 #variable {GAME_ROOM}   {\e[36m} 
 
-#variable {CRITICAL}               {$FG_RED}
-#variable {HIGH}                   {$FG_MAGENTA}
-#variable {MEDIUM}                 {$FG_YELLOW}
-#variable {LOW}                    {$FG_GREEN}
-#variable {INFO}                   {$FG_WHITE}
+#variable {CRITICAL}               {${FG_WHITE}${BG_RED}}
+#variable {HIGH}                   {${FG_BLACK}${BG_MAGENTA}}
+#variable {MEDIUM}                 {${FG_BLACK}${BG_YELLOW}}
+#variable {LOW}                    {${FG_BWHITE}${BG_GREEN}}
+#variable {INFO}                   {${FG_BWHITE}${BG_CYAN}}
 #variable {CMD}                    {$FG_WHITE}
 #variable {YOU}                    {$FG_BLUE}
 #variable {ENEMY}                  {$FG_YELLOW}
@@ -81,3 +80,4 @@
     #format {result} {<%s%s%s>} {${x_res}${y_res}${z_res}};
     #return {$result};
 }
+#showme {${INFO}Loading globals.${RESET}};

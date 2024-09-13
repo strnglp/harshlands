@@ -1,9 +1,11 @@
 #nop -------------------------------------------------------------------------
 #nop Main
 #nop -------------------------------------------------------------------------
+#script {dir} {dir=$(echo ~/Harshlands); mkdir -p "$dir" && echo "$dir"}
+#variable {dir} {$dir[1]}
 
-#split 3 4 0 -85
-
+#nop Constants used throughout the scripts
+#read {$dir/Globals.tin}
 #config {AUTO TAB} {5000}
 #config {BUFFER SIZE} {1000000}
 #config {CHARSET} {UTF-8}
@@ -33,10 +35,6 @@
 #config {VERBATIM CHAR} {\}
 #config {VERBOSE} {OFF}
 #config {WORDWRAP} {ON}
-#script {dir} {dir=$(echo ~/Harshlands); mkdir -p "$dir" && echo "$dir"}
-#variable {dir} {$dir[1]}
-#nop Constants used throughout the scripts
-#read {$dir/Globals.tin}
 
 
 #nop -------------------------------------------------------------------------
@@ -65,6 +63,11 @@
 
 #nop Map
 #read {$dir/Map.tin}
+
+#nop WARNING: Unless you know how to use tintin mapping I recommend leaving this off;
+#nop If you are feeling adventurous or know what you're doing, perhaps backup the;
+#nop MyMap.map file before you turn this on;
+mapoff;
 
 #nop Highlights
 #read {$dir/HL.tin}

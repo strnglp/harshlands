@@ -1,7 +1,26 @@
-#echo {Loading map.}
-#alias {rlmap} { #read {$dir/Map.tin} }
+#nop -------------------------------------------------------------------------
+#nop Mapping
+#nop -------------------------------------------------------------------------
+#showme {${INFO}Loading map.${INFO}};
+#alias {rlmap} { #read {$dir/Map.tin} };
 
-#highlight {\b{north|south|east|west}\b} {$FG_GREEN};
+#alias {mapon} {
+    #class mapping load;
+    #unsplit;
+    #split 3 4 0 -85;
+    #map return;
+    #showme {${INFO}Map enabled.${RESET}};
+};
+
+#alias {mapoff} {
+    #class mapping clear;
+    #unsplit;
+    #split 3 4;
+    #map leave;
+    #showme {${INFO}Map disabled.${RESET}};
+};
+
+#class mapping open;
 
 #PATHDIR {d}   {u}   {32}
 #PATHDIR {e}   {w}   {2}
@@ -158,12 +177,12 @@
 #variable {map} {$dir/MyMap.map}
 #script {mapexists} {[ -e $map ] && echo 1}
 #if {"$mapexists[1]" === "1"} {
-        #echo {Map found, reading.};
+        #showme {${INFO}Map found, reading.${RESET}};
         #map read $map;
         #map return;
 }
 {
-        #echo {Map not found, creating.};
+        #showme {${WARNING}Map not found, creating.${RESET}};
         #map create 200000;
         #map goto 1;
         #map write $map;
@@ -187,3 +206,7 @@
     #map write $map;
 }
 #ticker {map_timer} {#map write $map} {180}
+
+#class mapping close;
+#class mapping save;
+#class mapping clear;

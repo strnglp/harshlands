@@ -1,6 +1,7 @@
-#echo {Loading highlights.}
+#showme {${INFO}Loading highlights.${RESET}};
 #alias {rlhl} { #read {$dir/HL.tin} }
 
+#highlight {\b{north|south|east|west}\b} {$FG_GREEN};
 #variable {CLOSED} { @cc{ {$UNDER} {$FG_WHITE} } }
 #highlight {%w \(closed%*\)} {$CLOSED} {100}
 #variable {OPEN} {$UNDER}

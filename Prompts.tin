@@ -1,10 +1,13 @@
-#echo {Loaded prompt.};
+#nop -------------------------------------------------------------------------
+#nop A HUD like prompt handler
+#nop -------------------------------------------------------------------------
+#showme {${INFO}Loading prompt.${INFO}};
+
+#variable {cur_load} {};
+#variable {max_load} {};
 #alias {rlprompt} { #read {$dir/Prompts.tin} }
 
-#action {Goodbye, friend.. Come back soon!} {
-    polloff;
-}
-
+#gag {^$};
 #gag {^<%+1..w/%+/ >%*$};
 #gag {^speaking %+, composing %+$};
 #gag {^mode %+, aiming %+, endurance\[%+\]%s$};
@@ -25,8 +28,6 @@
 #variable {aspect2} {};
 #variable {encumbrance} {};
 #variable {fatigue} {};
-#variable {cur_load} {};
-#variable {max_load} {};
 #variable {sobriety} {};
 #variable {hunger} {};
 #variable {thirst} {};
@@ -37,24 +38,14 @@
 #variable {health} {};
 #variable {stamina} {};
 #variable {speed} {};
-#variable {travel_string} {};
 
+#variable {paused} {};
 #variable {lineone} {};
 #variable {linetwo} {};
 #variable {linethree} {};
-#variable {hud_update} {0};
-#variable {wait_for_input} {0};
 
 #unevent {CATCH RECEIVED LINE};
 #event {CATCH RECEIVED LINE} {
-
-    #nop special case for help text that is multi line, we don't want to;
-    #nop send profile/health/time when the help is waiting for input;
-    #if {"%1" == "%*Press return to continue - 'q' to quit%*"} {
-        #variable {wait_for_input} {1};
-    } {
-        #variable {wait_for_input} {0};
-    };
 
     #regexp {%1} {^<%+1..w/%+/ >%*$} {
         #format {health} {%n} {&1};
@@ -117,11 +108,9 @@
     #showme %0;
 };
 
-#nop TODO: Experiment with disabling the CATCH LINE event when not polling;
 #function start_poll {
     #ticker {poll} {
-        #if {$wait_for_input} {#return};
-        #variable {hud_update} {1};
+        #if {$paused} { #return };
         #variable {disguise} {};
         #send {profile t};
     } {4};
@@ -129,22 +118,33 @@
 
 #function stop_poll {
     #unticker {poll};
-    #variable {hud_update} {0};
-    #variable {wait_for_input} {0};
-    #echo {Status polling ended.};
+    #showme {${INFO}Status polling ended.${RESET}};
 };
 
 #alias {pollon} {
-    #variable {hud_update} {0};
-    #variable {wait_for_input} {0};
+    #variable {paused} {0};
     #variable {tmp} {@start_poll{};};
-    #echo {Polling for status.};
+    #showme {${INFO}Polling for status.${RESET}};
 };
-#alias {polloff} { #variable {tmp} {@stop_poll{};} };
+#alias {polloff} { 
+    #if {$paused} { #return };
+    #variable {paused} {1};
+    #variable {tmp} {@stop_poll{};} 
+};
+
+#action {Goodbye, friend.. Come back soon!} {
+    polloff;
+    #showme {${MEDIUM}Status polling disabled while in menu. Use `pollon` to resume.${RESET}};
+}
 
 #action {Type @help for editor options.} {
     polloff;
-    #echo {Disabling status polling while editing. Use `pollon` to resume.};
+    #showme {${MEDIUM}Status polling disabled while editing. Use `pollon` to resume.${RESET}};
+};
+
+#action {Press return to continue - 'q' to quit} {
+    polloff;
+    #showme {${MEDIUM}Status polling disabled while reading help. Use `pollon` to resume.${RESET}};
 };
 
 #ticker hud {
