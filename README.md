@@ -100,5 +100,5 @@ It's really difficult to use a mapper with Harshlands and will absolutely requir
 ## Credits
 These scripts were derived from MarshalDFX's work: https://github.com/mdfx01/ArmageddonMUD/
 
-I have a similarlly derived work for Armageddon located here:
+I have a similarly derived work for Armageddon located here:
 https://github.com/strnglp/armageddon
