@@ -67,7 +67,7 @@
 #nop WARNING: Unless you know how to use tintin mapping I recommend leaving this off;
 #nop If you are feeling adventurous or know what you're doing, perhaps backup the;
 #nop MyMap.map file before you turn this on;
-mapoff;
+mapon;
 
 #nop Highlights
 #read {$dir/HL.tin}

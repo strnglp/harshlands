@@ -7,18 +7,6 @@
 #variable {max_load} {};
 #alias {rlprompt} { #read {$dir/Prompts.tin} }
 
-#gag {^$};
-#gag {^<%+1..w/%+/ >%*$};
-#gag {^speaking %+, composing %+$};
-#gag {^mode %+, aiming %+, endurance\[%+\]%s$};
-#gag {^weapon aspects %+ and %+$};
-#gag {^currently %+, fatigue %+$};
-#gag {alcohol %+ hunger %+ thirst %+$};
-#gag {^state {sitting|standing|resting|sleeping}$};
-#gag {^you {trudge|pace|walk|jog|run|sprint}$};
-#gag {^time %+$};
-#gag {^you are currently cloaked or hooded%s$};
-
 #variable {language} {};
 #variable {composing} {};
 #variable {combat_mode} {};
@@ -37,75 +25,92 @@
 #variable {time_of_day} {};
 #variable {health} {};
 #variable {stamina} {};
+#variable {piety} {};
+#variable {activity} {};
 #variable {speed} {};
 
 #variable {paused} {};
 #variable {lineone} {};
 #variable {linetwo} {};
 #variable {linethree} {};
+#variable {prev_line} {};
 
 #unevent {CATCH RECEIVED LINE};
 #event {CATCH RECEIVED LINE} {
+    #variable {skip_line} {0};
 
-    #regexp {%1} {^<%+1..w/%+/ >%*$} {
+    #regexp {%0} {^$} {
+        #regexp {$prev_line} {^$} {
+            #variable {skip_line} {1};
+        };
+    };
+
+    #regexp {%1} {^<%+1..w/%+/%+%!{\/?}%*>%*$} {
         #format {health} {%n} {&1};
         #format {stamina} {%-8s} {&2};
         #replace {stamina} {|} {■};
-        #return;
+        #format {piety} {%s} {&3};
+        #format {activity} {%n} {&4};
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^speaking %+, composing %+$} {
         #format {language} {%n} {&1};
         #format {composing} {%n} {&2};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^mode %+, aiming %+, endurance\[%+\]%s$} {
         #format {combat_mode} {%n} {&1};
         #format {aiming} {%n} {&2};
         #format {endurance} {%n} {&3};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^weapon aspects %+ and %+$} {
         #format {aspect1} {%n} {&1};
         #format {aspect2} {%n} {&2};
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^currently %+, fatigue %+$} {
         #format {encumbrance} {%n} {&1};
         #format {fatigue} {%n} {&2};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {alcohol %+ hunger %+ thirst %+$} {
         #format {sobriety} {%n} {&1};
         #format {hunger} {%n} {&2};
         #format {thirst} {%n} {&3};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^state {sitting|standing|resting|sleeping}$} {
         #format {position} {%n} {&1};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^you {trudge|pace|walk|jog|run|sprint}$} {
         #format {speed} {%n} {&1};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^time %+$} {
         #format {time_of_day} {%n} {&1};
-        #return;
+        #variable {skip_line} {1};
     };
 
     #regexp {%1} {^you are currently cloaked or hooded%s$} {
         #variable {disguise} {Cloaked or hooded};
-        #return;
+        #variable {skip_line} {1};
     };
 
-    #showme %0;
+    #if {$skip_line != 1} {
+        #showme {%0};
+        #variable {prev_line} {%0};
+    };
+    #nop #system {echo %0 | cat -v >> ~/test.txt};
 };
 
 #function start_poll {
@@ -150,9 +155,9 @@
 #ticker hud {
     #format {topbar} { %s %s %s %s %s %s %-80s} {@get_time{}} {@get_hunger{}} {@get_thirst{}} {@get_sobriety{}} {@get_language{}} {@get_composing{}} {};
     #showme {$topbar} {2} {3};
-    #format {bottombar1} { %s%s %s %s %s %s %-80s} {@get_disguise{}} {@get_speed{}} {@get_position{}} {@get_combat_mode{}} {@get_aiming{}} {@get_aspect{}} {};
+    #format {bottombar1} { %s%s %s %s %s %s %s %-80s} {@get_disguise{}} {@get_speed{}} {@get_position{}} {@get_combat_mode{}} {@get_aiming{}} {@get_aspect{}} {@get_activity{}} {};
     #showme {$bottombar1} {-4} {3};
-    #format {bottombar2} { %s %s %s %s %-80s} {@get_health{}} {@get_stamina{}} {@get_fatigue{}} {@get_encumbrance{}} {};
+    #format {bottombar2} { %s %s %s %s %s %-80s} {@get_health{}} {@get_stamina{}} {@get_piety{}} {@get_fatigue{}} {@get_encumbrance{}} {};
     #showme {$bottombar2} {-3} {3};
 } {1};
 
@@ -375,6 +380,21 @@
     };
     #return {$result};
 };
+
+#function get_piety {
+    #variable {result} {};
+    #format {result} {${FG_BRED}%s${RESET}} {$piety};
+    #return {$result};
+};
+
+#function get_activity {
+    #variable {result} {};
+    #if {"$activity" != "%s"} {
+        #format {result} { %s} {$activity};
+    };
+    #return {$result};
+};
+
 
 #function get_fatigue {
     #variable {result} {};
