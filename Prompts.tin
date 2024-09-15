@@ -33,84 +33,65 @@
 #variable {lineone} {};
 #variable {linetwo} {};
 #variable {linethree} {};
-#variable {prev_line} {};
 
-#unevent {CATCH RECEIVED LINE};
-#event {CATCH RECEIVED LINE} {
-    #variable {skip_line} {0};
+#action {^<%+1..w/%+/%+%!{\/?}%*>%*$} { 
+    #line gag;
+    #format {health} {%n} {%1};
+    #format {stamina} {%s} {%2};
+    #format {piety} {%s} {%3};
+    #format {activity} {%n} {%4};
+};
 
-    #regexp {%0} {^$} {
-        #regexp {$prev_line} {^$} {
-            #variable {skip_line} {1};
-        };
-    };
+#action {^speaking %+, composing %+$} {
+    #line gag;
+    #format {language} {%n} {%1};
+    #format {composing} {%n} {%2};
+};
 
-    #regexp {%1} {^<%+1..w/%+/%+%!{\/?}%*>%*$} {
-        #format {health} {%n} {&1};
-        #format {stamina} {%-8s} {&2};
-        #replace {stamina} {|} {■};
-        #format {piety} {%s} {&3};
-        #format {activity} {%n} {&4};
-        #variable {skip_line} {1};
-    };
+#action {^mode %+, aiming %+, endurance\[%+\]%s$} {
+    #line gag;
+    #format {combat_mode} {%n} {%1};
+    #format {aiming} {%n} {%2};
+    #format {endurance} {%n} {%3};
+};
 
-    #regexp {%1} {^speaking %+, composing %+$} {
-        #format {language} {%n} {&1};
-        #format {composing} {%n} {&2};
-        #variable {skip_line} {1};
-    };
+#action {^weapon aspects %+ and %+$} {
+    #line gag;
+    #format {aspect1} {%n} {%1};
+    #format {aspect2} {%n} {%2};
+};
 
-    #regexp {%1} {^mode %+, aiming %+, endurance\[%+\]%s$} {
-        #format {combat_mode} {%n} {&1};
-        #format {aiming} {%n} {&2};
-        #format {endurance} {%n} {&3};
-        #variable {skip_line} {1};
-    };
+#action {^currently %+, fatigue %+$} {
+    #line gag;
+    #format {encumbrance} {%n} {%1};
+    #format {fatigue} {%n} {%2};
+};
 
-    #regexp {%1} {^weapon aspects %+ and %+$} {
-        #format {aspect1} {%n} {&1};
-        #format {aspect2} {%n} {&2};
-        #variable {skip_line} {1};
-    };
+#action {alcohol %+ hunger %+ thirst %+$} {
+    #line gag;
+    #format {sobriety} {%n} {%1};
+    #format {hunger} {%n} {%2};
+    #format {thirst} {%n} {%3};
+};
 
-    #regexp {%1} {^currently %+, fatigue %+$} {
-        #format {encumbrance} {%n} {&1};
-        #format {fatigue} {%n} {&2};
-        #variable {skip_line} {1};
-    };
+#action {^state {sitting|standing|resting|sleeping}$} {
+    #line gag;
+    #format {position} {%n} {%1};
+};
 
-    #regexp {%1} {alcohol %+ hunger %+ thirst %+$} {
-        #format {sobriety} {%n} {&1};
-        #format {hunger} {%n} {&2};
-        #format {thirst} {%n} {&3};
-        #variable {skip_line} {1};
-    };
+#action {^you {trudge|pace|walk|jog|run|sprint}$} {
+    #line gag;
+    #format {speed} {%n} {%1};
+};
 
-    #regexp {%1} {^state {sitting|standing|resting|sleeping}$} {
-        #format {position} {%n} {&1};
-        #variable {skip_line} {1};
-    };
+#action {^time %+$} {
+    #line gag 2;
+    #format {time_of_day} {%n} {%1};
+};
 
-    #regexp {%1} {^you {trudge|pace|walk|jog|run|sprint}$} {
-        #format {speed} {%n} {&1};
-        #variable {skip_line} {1};
-    };
-
-    #regexp {%1} {^time %+$} {
-        #format {time_of_day} {%n} {&1};
-        #variable {skip_line} {1};
-    };
-
-    #regexp {%1} {^you are currently cloaked or hooded%s$} {
-        #variable {disguise} {Cloaked or hooded};
-        #variable {skip_line} {1};
-    };
-
-    #if {$skip_line != 1} {
-        #showme {%0};
-        #variable {prev_line} {%0};
-    };
-    #nop #system {echo %0 | cat -v >> ~/test.txt};
+#action {^you are currently cloaked or hooded%s$} {
+    #line gag;
+    #variable {disguise} {Cloaked or hooded};
 };
 
 #function start_poll {
@@ -324,66 +305,97 @@
     #variable {result} {};
     #switch {{$health}} {
         #case {{Unhurt}} {
-            #format {result} {${FG_GREEN} %s${RESET}} {$health};
+            #format {result} {${FG_GREEN} %-6s${RESET}} {■■■■■■};
         };
         #case {{Superficial}} {
-            #format {result} {${FG_BGREEN} %s${RESET}} {$health};
+            #format {result} {${FG_BGREEN} %-6s${RESET}} {■■■■■};
         };
         #case {{Minor}} {
-            #format {result} {${FG_BYELLOW} %s${RESET}} {$health};
+            #format {result} {${FG_BYELLOW} %-6s${RESET}} {■■■■};
         };
         #case {{Moderate}} {
-            #format {result} {${FG_YELLOW} %s${RESET}} {$health};
+            #format {result} {${FG_YELLOW} %-6s${RESET}} {■■■};
         };
         #case {{Severe}} {
-            #format {result} {${FG_RED} %s${RESET}} {$health};
+            #format {result} {${FG_MAGENTA} %-6s${RESET}} {■■};
         };
         #case {{Mortal}} {
-            #format {result} {${FG_BRED} %s${RESET}} {$health};
+            #format {result} {${FG_RED} %-6s${RESET}} {■};
         };
-        #default  { #format {result} { %s} {$health};};
+        #default { 
+            #format {result} {${FG_BRED} %-6s} {};
+        };
     };
     #return {$result};
 };
 
 #function get_stamina {
     #variable {result} {};
-    #switch {{$fatigue}} {
-        #case {{Completely Rested}} {
-            #format {result} {${FG_GREEN} %s${RESET}} {$stamina};
+    #local {length} {0};
+    #format {result} {%p} {$stamina};
+    #format {length} {%L} {$result};
+    #replace {result} {|} {■};
+    #switch {$length} {
+        #case {8} {
+            #format {result} {${FG_GREEN} %-8s${RESET}} {$result};
         };
-        #case {{Relatively Fresh}} {
-            #format {result} {${FG_BGREEN} %s${RESET}} {$stamina};
+        #case {7} {
+            #format {result} {${FG_BGREEN} %-8s${RESET}} {$result};
         };
-        #case {{Somewhat Winded}} {
-            #format {result} {${FG_BYELLOW} %s${RESET}} {$stamina};
+        #case {6} {
+            #format {result} {${FG_BYELLOW} %-8s${RESET}} {$result};
         };
-        #case {{Winded}} {
-            #format {result} {${FG_YELLOW} %s${RESET}} {$stamina};
+        #case {5} {
+            #format {result} {${FG_YELLOW} %-8s${RESET}} {$result};
         };
-        #case {{Somewhat Tired}} {
-            #format {result} {${FG_BLUE} %s${RESET}} {$stamina};
+        #case {4} {
+            #format {result} {${FG_BLUE} %-8s${RESET}} {$result};
         };
-        #case {{Tired}} {
-            #format {result} {${FG_BMAGENTA} %s${RESET}} {$stamina};
+        #case {3} {
+            #format {result} {${FG_BMAGENTA} %-8s${RESET}} {$result};
         };
-        #case {{Extremely Tired}} {
-            #format {result} {${FG_MAGENTA} %s${RESET}} {$stamina};
+        #case {2} {
+            #format {result} {${FG_MAGENTA} %-8s${RESET}} {$result};
         };
-        #case {{Exhausted}} {
-            #format {result} {${FG_RED} %s${RESET}} {$stamina};
+        #case {1} {
+            #format {result} {${FG_BRED} %-8s${RESET}} {$result};
         };
-        #case {{Completely Exhausted}} {
-            #format {result} {${FG_BRED} %s${RESET}} {$stamina};
+        #default  { 
+            #format {result} {${FG_RED} %-8s${RESET}} {$result};
         };
-        #default  { #format {result} {? %s} {$stamina};};
     };
     #return {$result};
 };
 
 #function get_piety {
     #variable {result} {};
-    #format {result} {${FG_BRED}%s${RESET}} {$piety};
+    #local {length} {0};
+    #format {result} {%p} {$piety};
+    #format {length} {%L} {$result};
+    #replace {result} {+} {■};
+    #switch {$length} {
+        #case {6} {
+            #format {result} {${FG_GREEN}%-6s${RESET}} {$result};
+        };
+        #case {5} {
+            #format {result} {${FG_BGREEN}%-6s${RESET}} {$result};
+        };
+        #case {4} {
+            #format {result} {${FG_BYELLOW}%-6s${RESET}} {$result};
+        };
+        #case {3} {
+            #format {result} {${FG_YELLOW}%-6s${RESET}} {$result};
+        };
+        #case {2} {
+            #format {result} {${FG_BMAGENTA}%-6s${RESET}} {$result};
+        };
+        #case {1} {
+            #format {result} {${FG_MAGENTA}%-6s${RESET}} {$result};
+        };
+        #default  { 
+            #format {result} {${FG_BRED}%-6s${RESET}} {$result};
+        };
+    };
     #return {$result};
 };
 
