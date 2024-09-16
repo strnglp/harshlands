@@ -29,6 +29,8 @@
 #variable {activity} {};
 #variable {speed} {};
 
+#variable {update_complete} {0};
+
 #variable {paused} {};
 #variable {lineone} {};
 #variable {linetwo} {};
@@ -85,20 +87,30 @@
 };
 
 #action {^time %+$} {
-    #line gag 2;
+    #line gag;
     #format {time_of_day} {%n} {%1};
     #nop This should be set by the very next line if it's coming at all;
     #variable {disguise} {};
+    #variable {update_complete} {1};
 };
 
 #action {^you are currently cloaked or hooded%s$} {
-    #line gag 2;
+    #line gag;
     #variable {disguise} {Cloaked or hooded};
+    #variable {update_complete} {1};
+};
+
+#action {^$} {
+    #if {$update_complete} {
+        #line gag;
+    };
+    #variable {update_complete} {0};
 };
 
 #function start_poll {
     #ticker {poll} {
         #if {$paused} { #return };
+        #variable {update_complete} {0};
         #send {profile t};
     } {4};
 };
