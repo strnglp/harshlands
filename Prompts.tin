@@ -87,17 +87,18 @@
 #action {^time %+$} {
     #line gag 2;
     #format {time_of_day} {%n} {%1};
+    #nop This should be set by the very next line if it's coming at all;
+    #variable {disguise} {};
 };
 
 #action {^you are currently cloaked or hooded%s$} {
-    #line gag;
+    #line gag 2;
     #variable {disguise} {Cloaked or hooded};
 };
 
 #function start_poll {
     #ticker {poll} {
         #if {$paused} { #return };
-        #variable {disguise} {};
         #send {profile t};
     } {4};
 };
