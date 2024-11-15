@@ -1,25 +1,9 @@
 #nop -------------------------------------------------------------------------
 #nop Mapping
-#nop -------------------------------------------------------------------------
+#nop -------------------------------------------------------------------------;
 #showme {${INFO}Loading map.${INFO}};
 #alias {rlmap} { #read {$dir/Map.tin} };
-
-#alias {mapon} {
-    #class mapping load;
-    #unsplit;
-    #split 3 4 0 -85;
-    #map return;
-    #showme {${INFO}Map enabled.${RESET}};
-};
-
-#alias {mapoff} {
-    #class mapping clear;
-    #unsplit;
-    #split 3 4;
-    #map leave;
-    #showme {${INFO}Map disabled.${RESET}};
-};
-
+#variable {mapstate} {0};
 #class mapping open;
 
 #PATHDIR {d}   {u}   {32}
@@ -61,6 +45,10 @@
 #PATHDIR {enter 8.tenement} {leave}
 #PATHDIR {enter 9.tenement} {leave}
 #PATHDIR {enter cart} {leave}
+#PATHDIR {enter cottage} {leave}
+#PATHDIR {enter rest} {leave}
+#PATHDIR {enter cave} {leave}
+#PATHDIR {enter rest} {leave}
 
 
 #alias {up} {u}
@@ -108,7 +96,7 @@
 #nop -------------------------------------------------------------------------
 
 
-#nop MOUSE EVENTS
+#nop MOUSE EVENTS;
 #event {MAP REGION PRESSED MOUSE BUTTON ONE} {
         #var {o_x} %0;
         #var {o_y} %1;
@@ -126,7 +114,7 @@
 #event {MAP ROOM DOUBLE-CLICKED MOUSE BUTTON ONE} {#echo {${FG_BGREEN}Room: vnum %4}; #map at %4 #map set}
 
 #nop movement timing for reference
-#nop Note: My walk speed =~ 3.6 seconds
+#nop Note: My walk speed =~ 3.6 seconds;
 #variable {walktimer} {0}
 #alias {walktimer on} { #variable {walktimer} {1}}
 #alias {walktimer off} { #variable {walktimer} {0}}
@@ -134,48 +122,58 @@
 #variable {cur_room_time} {0}
 
 #nop \e[0m>\e[36mTernua Road\e[0m \e[32m[\e[36mCity\e[32m]\e[0m  (Patrolled)\e[0m 
-#nop                  1       2      3     4    5    6    7    
+#nop                  1       2      3     4    5    6    7    ;
 #action {~${GAME_ROOM}%+%c %c\[%c%+%c\]%*} {
-        #if {$walk_timer} {
-                #variable {prev_room_time} {$cur_room_time};
-                #echo {Prev: %s Cur: %s} {$prev_room_time} {$cur_room_time};
-                #script {now} {perl -MTime::HiRes=clock_gettime -e 'print clock_gettime(0)'};
-                #variable {cur_room_time} {$now[1]};
-                #script {elapsed_time} {perl -e 'print $cur_room_time - $prev_room_time'};
-                #echo {Walk time: %s} {$elapsed_time[1]};
-        };
+    #if {$walk_timer} {
+        #variable {prev_room_time} {$cur_room_time};
+        #echo {Prev: %s Cur: %s} {$prev_room_time} {$cur_room_time};
+        #script {now} {perl -MTime::HiRes=clock_gettime -e 'print clock_gettime(0)'};
+        #variable {cur_room_time} {$now[1]};
+        #script {elapsed_time} {perl -e 'print $cur_room_time - $prev_room_time'};
+        #echo {Walk time: %s} {$elapsed_time[1]};
+    };
 
-        #nop mapping highlights and info;
-        #map set roomname %1;
-        #regexp {%5} {{City|Road|Trail}} {
-                #map get {roomsymbol} {symbol};
-                #if {{$symbol} == "{| }"} {
-                    #map set roomcolor ${FG_BYELLOW}
-                }
-        };
-}
+    #nop mapping highlights and info;
+    #map set roomname %1;
+    #regexp {%5} {{City|Road|Trail}} {
+        #map get {roomsymbol} {symbol};
+        #if {{$symbol} == "{| }"} {
+            #map set roomcolor ${FG_BYELLOW}
+        }
+    };
+
+    #variable {curroom} {%1};
+    show_room_info;
+};
+
+#action {Exits: %*} {
+    clearweather;
+    #variable {curexits} {%1};
+    show_room_info;
+};
 
 #nop branching/hidden rooms;
 #nop e.g. walk east, walk back west, mapbranch w;
-#alias {mapbranch %.} {#map insert %1 {void;hide}}
+#alias {mapbranch %.} {#map insert %1 {void;hide}};
 #nop aliases for highlighting rooms;
-#alias {mapreset} {#map set roomsymbol {}; #map set roomcolor ${FG_BWHITE}}
-#alias {maproad} {#map set roomcolor ${FG_BYELLOW}}
-#alias {mapshop} {#map set roomsymbol ; #map set roomcolor ${FG_BGREEN}}
-#alias {maptavern} {#map set roomsymbol ; #map set roomcolor ${FG_BCYAN}}
-#alias {mapstable} {#map set roomsymbol 󱗁; #map set roomcolor ${FG_BBLUE}}
-#alias {mapapt} {#map set roomsymbol ; #map set roomcolor ${FG_BMAGENTA}}
-#alias {mapwarehouse} {#map set roomsymbol 󰾁; #map set roomcolor ${FG_BMAGENTA}}
-#alias {mapgate} {#map set roomsymbol 󰊙; #map set roomcolor ${FG_YELLOW}}
-#alias {maptemple} {#map set roomsymbol ; #map set roomcolor ${FG_BRED}}
-#alias {mapport} {#map set roomsymbol 󰻈; #map set roomcolor ${FG_BLUE}}
-#alias {mapclinic} {#map set roomsymbol 󰿶; #map set roomcolor ${FG_RED}}
-#alias {mapguild} {#map set roomsymbol 󰡉; #map set roomcolor ${FG_BBLUE}}
+#alias {mapreset} {#map set roomsymbol {}; #map set roomcolor ${FG_BWHITE}};
+#alias {maproad} {#map set roomcolor ${FG_BYELLOW}};
+#alias {mapshop} {#map set roomsymbol ; #map set roomcolor ${FG_BGREEN}};
+#alias {maptavern} {#map set roomsymbol ; #map set roomcolor ${FG_BCYAN}};
+#alias {mapstable} {#map set roomsymbol 󱗁; #map set roomcolor ${FG_BBLUE}};
+#alias {mapapt} {#map set roomsymbol ; #map set roomcolor ${FG_BMAGENTA}};
+#alias {mapwarehouse} {#map set roomsymbol 󰾁; #map set roomcolor ${FG_BMAGENTA}};
+#alias {mapgate} {#map set roomsymbol 󰊙; #map set roomcolor ${FG_YELLOW}};
+#alias {maptemple} {#map set roomsymbol ; #map set roomcolor ${FG_BRED}};
+#alias {mapport} {#map set roomsymbol 󰻈; #map set roomcolor ${FG_BLUE}};
+#alias {mapclinic} {#map set roomsymbol 󰿶; #map set roomcolor ${FG_RED}};
+#alias {mapguild} {#map set roomsymbol 󰡉; #map set roomcolor ${FG_BBLUE}};
+#alias {mapmark} {#map set roomsymbol ?; #map set roomcolor ${FG_MAGENTA}};
 
 
-#nop load map
-#variable {map} {$dir/MyMap.map}
-#script {mapexists} {[ -e $map ] && echo 1}
+#nop load map;
+#variable {map} {$dir/MyMap.map};
+#script {mapexists} {[ -e $map ] && echo 1};
 #if {"$mapexists[1]" === "1"} {
         #showme {${INFO}Map found, reading.${RESET}};
         #map read $map;
@@ -186,26 +184,26 @@
         #map create 200000;
         #map goto 1;
         #map write $map;
-}
+};
 
-#map flag vtmap on
-#map offset 4 87 -6 -1
-#map flag direction off
-#map legend {ascii nesw misc} {user} {󱣣}
+#map flag vtmap on;
+#nop #map offset 4 87 -6 -1;
+#map flag direction off;
+#map legend {ascii nesw misc} {user} {󱣣};
+#map legend {nesw misc} {user} {󱣣};
 
 
 
-#nop autosave map
-#alias {quit} {
+#nop autosave map;
+#EVENT {SESSION DISCONNECTED} {    
     #echo {MAP SAVED};
     #map write $map;
-    #send {quit};
-}
-#action {Goodbye, friend.. Come back soon!} {
+};
+#EVENT {SESSION DEACTIVATED} {
     #echo {MAP SAVED};
     #map write $map;
-}
-#ticker {map_timer} {#map write $map} {180}
+};
+#ticker {map_timer} {#map write $map} {180};
 
 #class mapping close;
 #class mapping save;

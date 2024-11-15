@@ -1,0 +1,157 @@
+#nop -------------------------------------------------------------------------
+#nop HUD / Splits
+#nop -------------------------------------------------------------------------;
+#showme {${INFO}Loading HUD.${INFO}};
+
+#alias {maptop} {
+    #class mapping load;
+    #variable {mapstate} {1};
+    size_splits;
+    #map return;
+    #showme {${INFO}Map top enabled.${RESET}};
+};
+
+#alias {mapfull} {
+    #class mapping load;
+    #variable {mapstate} {2};
+    size_splits;
+    #map return;
+    #showme {${INFO}Map fullscreen enabled.${RESET}};
+
+};
+
+#alias {mapoff} {
+    #class mapping clear;
+    #variable {mapstate} {0};
+    size_splits;
+    #map leave;
+    #showme {${INFO}Map disabled.${RESET}};
+};
+
+#alias size_splits {
+    #screen get {COLS} {cols};
+    #screen get {ROWS} {rows};
+    #math margin {($cols - 80) / 2};
+    #if {$margin < 0} {
+        #variable {margin} {0};
+    };
+
+    #if {$mapstate == 1} {
+        #math {inforow} {$rows / 3};
+    };
+    #elseif {$mapstate == 2 } {
+        #math {inforow} {$rows - 8};
+    };
+    #else {
+        #variable {inforow} {0};
+    };
+    #split $inforow 5 $margin $margin 1;
+};
+
+
+#event {SCREEN RESIZE} {
+    size_splits;
+    show_room_info;
+};
+
+#alias show_room_info {    
+    #showme {${RESET}────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────}
+    {$inforow};
+    #showme {┬} {$inforow} {$margin};
+    #showme {┬} {$inforow} {-$margin};
+    #variable {tmp} {@show_room_info_left{$curroom;$inforow}};
+    #variable {tmp} {@show_room_info_right{$curexits;$inforow}};
+};
+
+#function show_room_info_left {
+    #format {len} {%L} {%1};
+    #showme {${GAME_ROOM}%1} {%2} {0};
+};
+
+#function show_room_info_right {
+
+    #format {roomlen} {%L} {$curroom};
+    #format {exitlen} {%L} {%1};
+    #if {$cols - $roomlen > $exitlen} {
+        #showme {%1} {%2} {$cols-$exitlen+1};
+    };
+};
+
+#alias clearweather {
+    #unticker rain;
+    #draw {BLANKED} {BOX} {$inforow+1} {1} {-7} {$margin-2} {};
+    #draw {BLANKED} {BOX} {$inforow+1} {-$margin+1} {-7} {$cols} {};
+};
+
+#alias misty {
+    #unticker rain;
+    #ticker rain {
+        #draw {<108>} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {1} {9} {⸱ };
+        #draw {<108>} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {1} {9} {⸱ };
+    } {.3};
+};
+
+#alias sprinkling {
+    #unticker rain;
+    #ticker rain {
+        #draw {Blue} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {1} {9} {.',};
+        #draw {Blue} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {1} {9} {.',};
+    } {.1};
+};
+#alias raining {
+    #unticker rain;
+    #ticker rain {
+        #draw {Azure} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {2} {3} {┋┊┇┆ ▏};
+        #draw {Azure} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {2} {3} {┋┊┇┆ ▏};
+    } {.1};
+};
+#alias pouring {
+    #unticker rain;
+    #ticker rain {
+        #draw {Blue} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {9} {9} {▖▗▘▙▚▛▜▝▞▟};
+        #draw {Blue} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {9} {9} {▖▗▘▙▚▛▜▝▞▟};
+    } {.1};
+};
+#alias flurrying {
+    #unticker rain;
+    #ticker rain {
+        #draw {White} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {1} {4} {⸱ };
+        #draw {White} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {1} {4} {⸱ };
+    } {.3};
+};
+#alias snowing {
+    #unticker rain;
+    #ticker rain {
+        #draw {White} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {1} {1} {⸱∙⸱∙⸱∙⸱⸱∙⸱∙⸱⸱∙⸱∙⸱⸱∙⸱∙⸱*❄};
+        #draw {White} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {1} {1} {⸱∙⸱∙⸱∙⸱⸱∙⸱∙⸱⸱∙⸱∙⸱⸱∙⸱∙⸱*❄};
+    } {.3};
+};
+#alias hailing {
+    #unticker rain;
+    #ticker rain {
+        #draw {White} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {2} {9} {◦•⸱∙};
+        #draw {White} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {2} {9} {◦•⸱∙};
+    } {.3};
+};
+#alias blizzard {
+    #unticker rain;
+    #ticker rain {
+        #draw {White} {RAIN} {$inforow+1} {1} {-8} {$margin-2} {percipitation} {9} {9} {⸱∙⸱∙⸱⸱∙⸱∙⸱*❄};
+        #draw {White} {RAIN} {$inforow+1} {-$margin+1} {-8} {$cols} {percipitation} {9} {9} {⸱∙⸱∙⸱⸱∙⸱∙⸱*❄};
+    } {.3};
+};
+
+
+#nop These are the strings I've seen related to weather so far, add more as you encounter them;
+#action {The air here carries the subtle aroma of impending rain} {misty};
+#action {A light, cool rain is falling here} {sprinkling};
+#action {A light sprinkling of rain falls from the sky.} {sprinkling};
+#action {A copious amount of rain is falling steadily here.} {raining};
+#action {Pouring rain showers down upon the land.} {pouring};
+
+#action {A light dusting of snow is falling in the area.} {flurrying};
+#action {Snow is falling steadily here} {snowing};
+#action {a blizzard howls} {blizzard};
+
+
+mapoff;

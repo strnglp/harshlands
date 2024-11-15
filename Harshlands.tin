@@ -1,82 +1,75 @@
-#nop -------------------------------------------------------------------------
-#nop Main
-#nop -------------------------------------------------------------------------
-#script {dir} {dir=$(echo ~/Harshlands); mkdir -p "$dir" && echo "$dir"}
-#variable {dir} {$dir[1]}
+#nop -------------------------------------------------------------------------;
+#nop Main;
+#nop -------------------------------------------------------------------------;
+#script {dir} {dir=$(echo ~/Sync/MUDs/Harshlands); mkdir -p "$dir" && echo "$dir"};
+#variable {dir} {$dir[1]};
 
-#nop Constants used throughout the scripts
-#read {$dir/Globals.tin}
-#config {AUTO TAB} {5000}
-#config {BUFFER SIZE} {1000000}
-#config {CHARSET} {UTF-8}
-#nop Reduced to 16 for simplicity, controlling colors via terminal settings is
-#nop faster, albiet significantly more limiting in terms of color options
-#nop going with a more is less approach here.
-#config {COLOR MODE} {ANSI}
-#nop Disabled due to bug in RECEIVED OUTPUT EVENT
-#nop May cause some color leakage so you need to reset colors at line endings
-#CONFIG {COLOR PATCH} {ON}
-#config {COMMAND COLOR} {$CMD}
-#config {COMMAND ECHO} {ON}
-#config {COMPACT} {OFF}
-#config {CONNECT RETRY} {15.0}
-#config {HISTORY SIZE} {1000}
-#config {LOG MODE} {HTML}
-#config {MOUSE} {ON}
-#config {PACKET PATCH} {0.50}
-#config {REPEAT CHAR} {!}
-#config {REPEAT ENTER} {OFF}
-#config {SCREEN READER} {OFF}
-#config {SCROLL LOCK} {ON}
-#config {SPEEDWALK} {ON}
-#config {TELNET} {ON}
-#config {TINTIN CHAR} {#}
-#config {VERBATIM} {OFF}
-#config {VERBATIM CHAR} {\}
-#config {VERBOSE} {OFF}
-#config {WORDWRAP} {ON}
+#nop Constants used throughout the scripts;
+#read {$dir/Globals.tin};
+#config {AUTO TAB} {5000};
+#config {BUFFER SIZE} {1000000};
+#config {CHARSET} {UTF-8};
+#nop Reduced to 16 for simplicity, controlling colors via terminal settings is;
+#nop faster, albiet significantly more limiting in terms of color options;
+#nop going with a more is less approach here.;
+#config {COLOR MODE} {ANSI};
+#nop Disabled due to bug in RECEIVED OUTPUT EVENT;
+#nop May cause some color leakage so you need to reset colors at line endings;
+#config {COLOR PATCH} {OFF};
+#config {COMMAND COLOR} {$CMD};
+#config {COMMAND ECHO} {ON};
+#config {COMPACT} {ON};
+#config {CONNECT RETRY} {15.0};
+#config {HISTORY SIZE} {1000};
+#config {LOG MODE} {HTML};
+#config {MOUSE} {ON};
+#config {PACKET PATCH} {10};
+#config {REPEAT CHAR} {!};
+#config {REPEAT ENTER} {OFF};
+#config {SCREEN READER} {OFF};
+#config {SCROLL LOCK} {ON};
+#config {SPEEDWALK} {ON};
+#config {TELNET} {ON};
+#config {TINTIN CHAR} {#};
+#config {VERBATIM} {OFF};
+#config {VERBATIM CHAR} {\};
+#config {VERBOSE} {OFF};
+#config {WORDWRAP} {ON};
 
 
-#nop -------------------------------------------------------------------------
-#nop MOUSE NAV: can click in input bar to move cursor and use scroll wheel for
-#nop the buffer. Issue is right-click-paste doesn't work. use shift+rght clk
-#nop -------------------------------------------------------------------------
+#nop -------------------------------------------------------------------------;
+#nop MOUSE NAV: can click in input bar to move cursor and use scroll wheel for;
+#nop the buffer. Issue is right-click-paste doesn't work. use shift+rght clk;
+#nop -------------------------------------------------------------------------;
 
 #event {SCROLLED MOUSE WHEEL DOWN}
 {
-    #buffer down 4
-}
+    #buffer down 4;
+};
 
 #event {SCROLLED MOUSE WHEEL UP}
 {
-    #buffer up 4
-}
+    #buffer up 4;
+};
 
-#nop Login
-#read {$dir/Login.tin}
+#nop Login;
+#read {$dir/Login.tin};
 
-#nop Logging
-#script {logdir} {mkdir -p $dir/Logs; cd $dir/Logs; pwd}
-#variable {logdir} {$logdir[1]}
-#format {logfile} {$logdir/%t.html} {%Y-%m-%d}
-#log append $logfile
+#nop Logging;
+#script {logdir} {mkdir -p $dir/Logs; cd $dir/Logs; pwd};
+#variable {logdir} {$logdir[1]};
+#format {logfile} {$logdir/%t.html} {%Y-%m-%d};
+#log append $logfile;
 
-#nop Map
-#read {$dir/Map.tin}
+#nop Prompt, HUD, Map;
+#read {$dir/Map.tin};
+#read {$dir/HUD.tin};
+#delay {3} {#read {$dir/Prompts.tin}};
 
-#nop WARNING: Unless you know how to use tintin mapping I recommend leaving this off;
-#nop If you are feeling adventurous or know what you're doing, perhaps backup the;
-#nop MyMap.map file before you turn this on;
-mapon;
 
-#nop Highlights
-#read {$dir/HL.tin}
+#nop Highlights;
+#read {$dir/HL.tin};
 
-#nop PC names
-#read {$dir/PCs.tin}
+#nop PC names;
+#read {$dir/PCs.tin};
 
-#nop Prompt and HUD
-#read {$dir/Prompts.tin}
-
-#nop Reload it all
-#alias {reconnect} {#read $dir/Harshlands.tin}

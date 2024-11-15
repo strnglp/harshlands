@@ -29,101 +29,139 @@
 #variable {activity} {};
 #variable {speed} {};
 
-#variable {update_complete} {0};
-
 #variable {paused} {};
 #variable {lineone} {};
 #variable {linetwo} {};
 #variable {linethree} {};
 
-#action {^<%+1..w/%+/%+%!{\/?}%*>%*$} { 
-    #line gag;
-    #format {health} {%n} {%1};
-    #format {stamina} {%s} {%2};
-    #format {piety} {%s} {%3};
-    #format {activity} {%n} {%4};
-};
-
-#action {^speaking %+, composing %+$} {
-    #line gag;
-    #format {language} {%n} {%1};
-    #format {composing} {%n} {%2};
-};
-
-#action {^mode %+, aiming %+, endurance\[%+\]%s$} {
-    #line gag;
-    #format {combat_mode} {%n} {%1};
-    #format {aiming} {%n} {%2};
-    #format {endurance} {%n} {%3};
-};
-
-#action {^weapon aspects %+ and %+$} {
-    #line gag;
-    #format {aspect1} {%n} {%1};
-    #format {aspect2} {%n} {%2};
-};
-
-#action {^currently %+, fatigue %+$} {
-    #line gag;
-    #format {encumbrance} {%n} {%1};
-    #format {fatigue} {%n} {%2};
-};
-
-#action {alcohol %+ hunger %+ thirst %+$} {
-    #line gag;
-    #format {sobriety} {%n} {%1};
-    #format {hunger} {%n} {%2};
-    #format {thirst} {%n} {%3};
-};
-
-#action {^state {sitting|standing|resting|sleeping}$} {
-    #line gag;
-    #format {position} {%n} {%1};
-};
-
-#action {^you {trudge|pace|walk|jog|run|sprint}$} {
-    #line gag;
-    #format {speed} {%n} {%1};
-};
-
-#action {^time %+$} {
-    #line gag;
-    #format {time_of_day} {%n} {%1};
-    #nop This should be set by the very next line if it's coming at all;
-    #variable {disguise} {};
-    #variable {update_complete} {1};
-};
-
-#action {^you are currently cloaked or hooded%s$} {
-    #line gag;
-    #variable {disguise} {Cloaked or hooded};
-    #variable {update_complete} {1};
-};
-
-#action {^$} {
-    #if {$update_complete} {
-        #line gag;
+#macro {\eOP} {
+    #config {convert meta} {on};
+    #delay {5} {
+        #config {convert meta} {off};
     };
-    #variable {update_complete} {0};
 };
+
+
+#nop multi-line for when it doesn't span blocks;
+#substitute {mode %*, aiming %*, endurance\[%*\]%aweapon aspects %* and %*%acurrently %*, fatigue %*%aalcohol %* hunger %* thirst %*%astate %*%ayou %w%atime %*\n\n}{};
+
+#nop profile t returns the following strings, hide them;
+#substitute {~^speaking \e[32%*, composing \e[32%*\n}{};
+#substitute {~^mode \e[32m%*, aiming \e[32m%*, endurance\[\e[32m%*\]%*\n}{};
+#substitute {~^weapon aspects \e[32m%* and \e[32m%*\n}{};
+#substitute {~^currently \e[32m%*, fatigue \e[32m%*\n}{};
+#substitute {~^alcohol \e[32m%* hunger \e[32m%* thirst \e[32m%*\n}{};
+#substitute {~^state %c%w%c\n%a}{};
+#substitute {~^you \e[32m%w%c\n%a}{};
+#substitute {~^time \e[32m%*\n%a}{};
+#substitute {~^you are currently cloaked or hooded \n%a}{};
+
+#nop hide the prompt;
+#substitute {<%*/%*/%*>} {};
+
+#event {RECEIVED OUTPUT} {
+
+    #local {txt} {%0};
+
+    #nop match the string, extract the data, clear the string;
+    #nop be mindful that the string may be conjoined with other lines (hence %!*);
+    #regexp {%1} {%!*speaking %*, composing %*%!+1..A} {
+        #format {language} {%n} {&1};
+        #format {composing} {%n} {&2};
+    };
+
+    #regexp {%1} {%!*mode %*, aiming %*, endurance\[%*\]%*%!+1..A} {
+        #format {combat_mode} {%n} {&1};
+        #format {aiming} {%n} {&2};
+        #format {endurance} {%n} {&3};
+    };
+
+    #regexp {%1} {%!*weapon aspects %* and %*%!+1..A} {
+        #format {aspect1} {%n} {&1};
+        #format {aspect2} {%n} {&2};
+    };
+
+    #regexp {%1} {%!*currently %*, fatigue %*%!+1..A} {
+        #format {encumbrance} {%n} {&1};
+        #format {fatigue} {%n} {&2};
+
+    };
+
+    #regexp {%1} {%!*alcohol %* hunger %* thirst %*%!+1..A} {
+        #format {sobriety} {%n} {&1};
+        #format {hunger} {%n} {&2};
+        #format {thirst} {%n} {&3};
+
+    };    
+
+
+    #regexp {%1} {%!*state {sitting|standing|resting|sleeping|fighting}%!+1..A} {
+        #format {position} {%n} {&1};
+
+    };
+
+    #regexp {%1} {%!*you {trudge|pace|walk|jog|run|sprint}%!+1..A} {
+        #format {speed} {%n} {&1};
+
+    };
+
+    #regexp {%1} {%!*time %*%!+1..A} {
+        #format {time_of_day} {%n} {&1};
+        #nop This should be set by the very next line if it's coming at all;
+        #variable {disguise} {};
+
+    };
+
+    #regexp {%1} {%!*you are currently cloaked or hooded %!+1..A} {
+        #variable {disguise} {Cloaked or hooded};
+
+    };
+
+    #regexp {%1} {%!*<%*\/%*\/%*{\/|\>}} { 
+        #format {health} {%n} {&1};
+        #format {stamina} {%s} {&2};
+        #format {piety} {%s} {&3};
+        #format {activity} {%n} {};
+    };
+
+    #regexp {%1} {%!*<%!*\/%!*\/%!*\/%*>} { 
+        #format {activity} {%n} {&1};
+    };
+
+
+    #regexp {%1} {%*Goodbye, friend.. Come back soon!%*} {
+        polloff;
+        #nop #showme {${MEDIUM}Status polling disabled while in menu. Use `pollon` to resume.${RESET}};
+    };
+
+    #regexp {%1} {%*Type @help for editor options.%*} {
+        polloff;
+        #nop #showme {${MEDIUM}Status polling disabled while editing. Use `pollon` to resume.${RESET}};
+    };
+
+    #regexp {%1} {%*Press return to continue - 'q' to quit%*} {
+        polloff;
+        #nop #showme {${MEDIUM}Status polling disabled while reading help. Use `pollon` to resume.${RESET}};
+    };
+}
+
 
 #function start_poll {
     #ticker {poll} {
         #if {$paused} { #return };
-        #variable {update_complete} {0};
         #send {profile t};
     } {4};
 };
 
 #function stop_poll {
     #unticker {poll};
-    #showme {${INFO}Status polling ended.${RESET}};
+    #nop #showme {${INFO}Status polling ended.${RESET}};
 };
 
 #alias {pollon} {
     #variable {paused} {0};
     #variable {tmp} {@start_poll{};};
-    #showme {${INFO}Polling for status.${RESET}};
+    #nop #showme {${INFO}Polling for status.${RESET}};
 };
 #alias {polloff} { 
     #if {$paused} { #return };
@@ -131,28 +169,39 @@
     #variable {tmp} {@stop_poll{};} 
 };
 
-#action {%*Goodbye, friend.. Come back soon!%*} {
-    polloff;
-    #showme {${MEDIUM}Status polling disabled while in menu. Use `pollon` to resume.${RESET}};
-}
-
-#action {Type @help for editor options.} {
-    polloff;
-    #showme {${MEDIUM}Status polling disabled while editing. Use `pollon` to resume.${RESET}};
-};
-
-#action {Press return to continue - 'q' to quit} {
-    polloff;
-    #showme {${MEDIUM}Status polling disabled while reading help. Use `pollon` to resume.${RESET}};
-};
 
 #ticker hud {
-    #format {topbar} { %s %s %s %s %s %s %-80s} {@get_time{}} {@get_hunger{}} {@get_thirst{}} {@get_sobriety{}} {@get_language{}} {@get_composing{}} {};
-    #showme {$topbar} {2} {3};
-    #format {bottombar1} { %s%s %s %s %s %s %s %-80s} {@get_disguise{}} {@get_speed{}} {@get_position{}} {@get_combat_mode{}} {@get_aiming{}} {@get_aspect{}} {@get_activity{}} {};
+    #screen get {COLS} {cols};
+
+    #format {topbar} {%-100s} { };
+    #format {bottombar1} {%-100s} { };
+    #format {bottombar2} {%-100s} { };
+
+    #showme {$topbar} {%s} {-5} {-3};
+    #showme {$bottombar1} {%s} {-4} {-3};
+    #showme {$bottombar2} {%s} {-3} {-3};
+    
+    #format {topbar} {%s %s %s %s %s %s %-100s} {@get_time{}} {@get_hunger{}} {@get_thirst{}} {@get_sobriety{}} {@get_language{}} {@get_composing{}} {};
+    #showme {$topbar} {-5} {3};
+
+
+    #format {bottombar1} {%s%s %s %s %s %s %-100s} {@get_disguise{}} {@get_speed{}} {@get_position{}} {@get_combat_mode{}} {@get_aiming{}} {@get_aspect{}} {};
     #showme {$bottombar1} {-4} {3};
-    #format {bottombar2} { %s %s %s %s %s %-80s} {@get_health{}} {@get_stamina{}} {@get_piety{}} {@get_fatigue{}} {@get_encumbrance{}} {};
+    
+
+    #format {bottombar2} {%s %s %s %s %s %-100s} {@get_health{}} {@get_stamina{}} {@get_piety{}} {@get_encumbrance{}} {@get_activity{}} {};
     #showme {$bottombar2} {-3} {3};
+
+    #if {$paused} {
+        #showme {${FG_RED}◉${RESET}} {-5} {$cols-2};
+    } {
+        #showme {${FG_GREEN}◉${RESET}} {-5} {$cols-2};
+    };
+
+    #showme {│} {-5} {$cols};
+    #showme {│} {-4} {$cols};
+    #showme {│} {-3} {$cols};
+
 } {1};
 
 
@@ -336,7 +385,7 @@
             #format {result} {${FG_RED} %-6s${RESET}} {■};
         };
         #default { 
-            #format {result} {${FG_BRED} %-6s} {};
+            #format {result} {${FG_BRED} %-6s${RESET}} {};
         };
     };
     #return {$result};
@@ -388,25 +437,25 @@
     #replace {result} {+} {■};
     #switch {$length} {
         #case {6} {
-            #format {result} {${FG_GREEN}%-6s${RESET}} {$result};
+            #format {result} {${FG_GREEN} %-6s${RESET}} {$result};
         };
         #case {5} {
-            #format {result} {${FG_BGREEN}%-6s${RESET}} {$result};
+            #format {result} {${FG_BGREEN} %-6s${RESET}} {$result};
         };
         #case {4} {
-            #format {result} {${FG_BYELLOW}%-6s${RESET}} {$result};
+            #format {result} {${FG_BYELLOW} %-6s${RESET}} {$result};
         };
         #case {3} {
-            #format {result} {${FG_YELLOW}%-6s${RESET}} {$result};
+            #format {result} {${FG_YELLOW} %-6s${RESET}} {$result};
         };
         #case {2} {
-            #format {result} {${FG_BMAGENTA}%-6s${RESET}} {$result};
+            #format {result} {${FG_BMAGENTA} %-6s${RESET}} {$result};
         };
         #case {1} {
-            #format {result} {${FG_MAGENTA}%-6s${RESET}} {$result};
+            #format {result} {${FG_MAGENTA} %-6s${RESET}} {$result};
         };
         #default  { 
-            #format {result} {${FG_BRED}%-6s${RESET}} {$result};
+            #format {result} {${FG_BRED} %-6s${RESET}} {$result};
         };
     };
     #return {$result};
@@ -546,6 +595,10 @@
         #case {{Sleeping}} {
             #format {result} {${FG_BLUE}󰒲 %s${RESET}} {$position};
         };
+        #case {{Fighting}} {
+            #format {result} {${FG_BRED}󰞇 %s${RESET}} {$position};
+        };
+
         #default  { #format {result} {? %s} {$position};};
     };
     #return {$result};
@@ -555,11 +608,22 @@
     #variable {result} {};
     #switch {{$encumbrance}} {
         #case {{Unencumbered}} {
+            #format {result} {${FG_BGREEN}󰖡 %s${RESET}} {$encumbrance};
+        };
+        #case {{Lightly encumbered}} {
             #format {result} {${FG_GREEN}󰖡 %s${RESET}} {$encumbrance};
         };
+        #case {{Almost unencumbered}} {
+            #format {result} {${FG_BYELLOW}󰖡 %s${RESET}} {$encumbrance};
+        };
+        #case {{Slightly unencumbered}} {
+            #format {result} {${FG_YELLOW}󰖡 %s${RESET}} {$encumbrance};
+        };
+
         #default  { #format {result} {? %s} {$encumbrance};};
     };
     #return {$result};
 };
 
 pollon;
+

@@ -29,7 +29,7 @@
 #variable {BOLD}        {<188>}
 #variable {DIM}         {<288>}
 #variable {ITALIC}      {<388>}
-#variable {UNDER}  {<488>}
+#variable {UNDER}       {<488>}
 #variable {BLINK}       {<588>}
 #variable {REVERSE}     {<788>}
 #variable {DEFAULT}     {<099>}
@@ -40,16 +40,16 @@
 #variable {CRITICAL}               {${FG_WHITE}${BG_RED}}
 #variable {HIGH}                   {${FG_BLACK}${BG_MAGENTA}}
 #variable {MEDIUM}                 {${FG_BLACK}${BG_YELLOW}}
-#variable {LOW}                    {${FG_BWHITE}${BG_GREEN}}
-#variable {INFO}                   {${FG_BWHITE}${BG_CYAN}}
+#variable {LOW}                    {${FG_BLACK}${BG_GREEN}}
+#variable {INFO}                   {${FG_BLACK}${BG_CYAN}}
 #variable {CMD}                    {$FG_WHITE}
-#variable {YOU}                    {$FG_BLUE}
+#variable {YOU}                    {$FG_BYELLOW}
 #variable {ENEMY}                  {$FG_YELLOW}
-#variable {FRIEND}                 {$FG_CYAN}
+#variable {FRIEND}                 {$FG_BCYAN}
 #variable {KNOWN}                  {$FG_BLUE}
 #variable {PREVIOUSLY_KNOWN}       {$FG_BBLACK}
 
-#nop Combine 2 color codes for #highlight
+#nop Combine 2 color codes for #highlight;
 #function cc {
     #variable {result} {};
     #regexp {%1} {<%.%.%.>} {

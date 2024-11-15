@@ -1,8 +1,21 @@
 #showme {${INFO}Loading highlights.${RESET}};
-#alias {rlhl} { #read {$dir/HL.tin} }
+#alias {rlhl} { #read {$dir/HL.tin} };
 
-#highlight {\b{north|south|east|west}\b} {$FG_GREEN};
-#variable {CLOSED} { @cc{ {$UNDER} {$FG_WHITE} } }
-#highlight {%w \(closed%*\)} {$CLOSED} {100}
-#variable {OPEN} {$UNDER}
-#highlight {%w \(open%*\)} {$OPEN} {100}
+#highlight {\b{north|south|east|west}\b} {$FG_GREEN} {90};
+
+#variable {CLOSED} {@cc{{$UNDER}{$FG_WHITE}}};
+#highlight {%w \(closed%*\)} {$CLOSED} {100};
+#substitute {%w \(closed%*\)} {%0${RESET}} {100};
+#variable {OPEN} {$UNDER};
+#highlight {%w \(open%*\)} {$OPEN} {100};
+#substitute {%w \(open%*\)} {%0${RESET}} {100};
+
+#highlight {{(?<!["'])\b[Yy]ou\b(?!["'])}} {$YOU};
+
+#highlight {There are currently %d players on the isle of Harn.} ${BG_GREEN};
+#highlight {Some carts carry goods between the Mangai Hall and the market.} { @cc{ {$FG_BLACK} {$BG_RED} } };
+
+#highlight {You notice movement %*} ${INFO};
+#highlight {You hear sounds %*} ${INFO};
+#highlight {wanted poster} {@cc{$FG_RED;$BG_BLACK}};
+#highlight {marked wanted poster} {@cc{$FG_MAGENTA;$BG_BLACK}};

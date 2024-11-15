@@ -80,6 +80,26 @@ _Note: TinTin++ supports vastly more colors than the 16 ANSI colors I chose to u
 ## Screenshots
 ![Darkmode](./media/screenshot.png)
 
+## HUD
+The HUD should automatically start after you login. It updates every 3 seconds if the circular indicator ◉ in the bottom right is green.
+
+You can control polling for the HUD with the following:
+- `pollon` To start the HUD polling
+- `polloff` To stop the HUD polling
+
+There is an effort to disable polling while the game asks for extended input, such as submitting typos or reading help files that have multiple pages.
+
+#### Disclaimer
+This is an imperfect solution. There are a couple of known bugs which I consider minor.
+1. When polling is off, the HUD can sometimes show garbage, this is resolved by sending `pollon`
+2. The auto-polloff for multi-page help sometimes doesn't work perfectly and you'll need to ask for help twice to get the rest of the pages.
+3. Occasionally my substitutions will fail to suppress a part of the `profile t` reply, so you might see a part of it in the scroll region. This happens very rarely.
+
+I have high confidence I can and will fix these minor issues over time.
+
+#### Unknowns
+I have limited experience with Harshlands, there is a good chance I am missing handling for certain strings that may appear in the player profile. In particular I am not sure if I'm correctly handling piety yet.
+If you find something is broken please submit a PR or at least an example of the problem so we can debug it together.
 
 ## Mapping
 The script will create a map file for you if you don't have a `MyMap.map` in your `~/Harshlands` directory.
@@ -92,7 +112,7 @@ Mapping in TinTin++ is complex and _highly_ error prone. If you are not technica
 2. Type `mapon` *# This will split the sreen and turn the map on*
 3. Type `arrive market` *# This will align the map with your location*
 4. Type `#map write $map` *# This saves your position in the map file*
-5. Change line 70 in Harshlands.tin to `mapon` instead of `mapoff`  *# Launches the map at startup so you don't fall out of alignment*
+5. Change the last line in HUD.tin to `maptop` instead of `mapoff`  *# Launches the map at startup so you don't fall out of alignment*
 
 #### Second Disclaimer
 It's really difficult to use a mapper with Harshlands and will absolutely require a lot of tinkering. Read the [mapping help](https://tintin.mudhalla.net/manual/mapping.php) and consider joining the [TinTin Discord](https://discord.gg/gv7a37n) for assitance.
