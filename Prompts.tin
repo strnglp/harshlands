@@ -619,6 +619,10 @@
         #case {{Slightly unencumbered}} {
             #format {result} {${FG_YELLOW}󰖡 %s${RESET}} {$encumbrance};
         };
+        #case {{Encumbered}} {
+            #format {result} {${FG_BRED}󰖡 %s${RESET}} {$encumbrance};
+        };
+
 
         #default  { #format {result} {? %s} {$encumbrance};};
     };
